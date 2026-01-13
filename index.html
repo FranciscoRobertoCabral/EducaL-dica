@@ -19,7 +19,23 @@
         background-size: 20px 20px;
         background-position: 0 0,10px 10px;
       }
+      @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+      }
+      .animate-float {
+        animation: float 3s ease-in-out infinite;
+      }
     </style>
+    <script>
+      // Shim para process.env necessário para a SDK do Gemini no navegador
+      window.process = {
+        env: {
+          API_KEY: "" // Será injetado pelo ambiente de execução
+        }
+      };
+    </script>
     <script type="importmap">
     {
       "imports": {
@@ -33,7 +49,6 @@
   </head>
   <body class="bg-soft-pattern text-slate-800">
     <div id="root"></div>
-    <!-- Script de entrada necessário para execução no Vercel e outros ambientes -->
     <script type="module" src="index.tsx"></script>
   </body>
 </html>
