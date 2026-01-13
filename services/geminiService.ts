@@ -3,44 +3,54 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { ActivityIdea } from "../types";
 
 export const generateLessonIdea = async (theme: string, ageGroup: string): Promise<ActivityIdea> => {
-  // Inicialização direta conforme diretrizes
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+  // Inicializa o cliente dentro da função para garantir o uso da chave mais recente
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Crie uma atividade lúdica para Educação Infantil. 
+      contents: `Crie uma atividade lúdica detalhada para Educação Infantil. 
       TEMA: "${theme}"
-      FAIXA ETÁRIA: "${ageGroup}"`,
+      FAIXA ETÁRIA: "${ageGroup}"
+      Importante: Foque em ludicidade, exploração sensorial e brincadeiras práticas.`,
       config: {
-        systemInstruction: "Você é um especialista em educação infantil lúdica. Crie atividades práticas, divertidas e educativas. Retorne APENAS o JSON puro, sem blocos de código Markdown.",
+        systemInstruction: "Você é um mestre em educação infantil (BNCC). Suas sugestões são criativas, baratas de executar e altamente pedagógicas. Retorne sempre JSON puro.",
         responseMimeType: "application/json",
+        thinkingConfig: { thinkingBudget: 0 }, // Baixa latência para simuladores
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            title: { type: Type.STRING },
-            objective: { type: Type.STRING },
+            title: { type: Type.STRING, description: "Título criativo da atividade" },
+            objective: { type: Type.STRING, description: "Objetivo pedagógico alinhado ao desenvolvimento infantil" },
             materials: { 
               type: Type.ARRAY,
-              items: { type: Type.STRING }
+              items: { type: Type.STRING },
+              description: "Lista de materiais simples e acessíveis"
             },
             steps: { 
               type: Type.ARRAY,
-              items: { type: Type.STRING }
+              items: { type: Type.STRING },
+              description: "Passo a passo da condução da atividade"
             },
-            tips: { type: Type.STRING }
+            tips: { type: Type.STRING, description: "Uma dica extra para tornar a aula inesquecível" }
           },
           required: ["title", "objective", "materials", "steps", "tips"]
         },
       },
     });
 
-    const text = response.text || '';
-    // Limpeza de possíveis blocos de código Markdown para evitar erro no JSON.parse
-    const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    return JSON.parse(cleanJson) as ActivityIdea;
+    // O .text já retorna o conteúdo extraído do candidato principal
+    const rawContent = response.text;
+    if (!rawContent) {
+      throw new Error("Resposta vazia da IA");
+    }
+
+    // Limpeza robusta de blocos de código Markdown caso a IA os inclua indevidamente
+    const jsonString = rawContent.replace(/```json/g, '').replace(/```/g, '').trim();
+    
+    return JSON.parse(jsonString) as ActivityIdea;
   } catch (error) {
-    console.error("Erro no GeminiService:", error);
-    throw new Error("Não foi possível gerar a atividade no momento.");
+    console.error("Erro detalhado no simulador:", error);
+    throw error;
   }
 };

@@ -29,12 +29,9 @@
       }
     </style>
     <script>
-      // Shim para process.env necessário para a SDK do Gemini no navegador
-      window.process = {
-        env: {
-          API_KEY: "" // Será injetado pelo ambiente de execução
-        }
-      };
+      // Shim seguro para process.env - não sobrescreve se já existir
+      window.process = window.process || {};
+      window.process.env = window.process.env || {};
     </script>
     <script type="importmap">
     {

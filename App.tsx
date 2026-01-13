@@ -100,14 +100,19 @@ const AIDemo: React.FC = () => {
     setIdea(null);
 
     try {
+      if (!process.env.API_KEY) {
+        throw new Error("Chave de API não configurada. Verifique as variáveis de ambiente.");
+      }
       const result = await generateLessonIdea(theme, age);
       setIdea(result);
-      // Pequeno delay para a animação do card e scroll
       setTimeout(() => {
         resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);
-    } catch (err) {
-      setError("Ops! Não consegui criar a ideia agora. Verifique sua conexão ou tente um tema diferente.");
+    } catch (err: any) {
+      const msg = err.message?.includes("API_KEY") 
+        ? "Erro de Configuração: A chave de API não foi encontrada no ambiente Vercel."
+        : "Ops! Não consegui criar a ideia agora. Verifique sua conexão ou tente novamente em instantes.";
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -116,7 +121,6 @@ const AIDemo: React.FC = () => {
   return (
     <section id="demo" className="py-20 px-4">
       <div className="max-w-4xl mx-auto bg-amber-50 rounded-[2.5rem] p-8 md:p-12 border border-amber-200 shadow-xl relative overflow-hidden">
-        {/* Elemento Decorativo */}
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-amber-200/20 rounded-full blur-3xl"></div>
         
         <div className="text-center mb-10 relative z-10">
@@ -136,6 +140,7 @@ const AIDemo: React.FC = () => {
               className={`w-full px-5 py-3 rounded-xl border ${error ? 'border-red-300' : 'border-amber-200'} focus:ring-2 focus:ring-amber-400 outline-none transition-all shadow-sm`}
               value={theme}
               onChange={(e) => setTheme(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleGenerate()}
             />
           </div>
           <div>
@@ -163,7 +168,7 @@ const AIDemo: React.FC = () => {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Criando Aula Encantadora...
+              Semeando Criatividade...
             </>
           ) : "Gerar Ideia de Aula"}
         </button>
@@ -171,6 +176,9 @@ const AIDemo: React.FC = () => {
         {error && (
           <div className="mt-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-xl text-center text-sm font-medium animate-in fade-in zoom-in duration-300">
             {error}
+            {!process.env.API_KEY && (
+              <p className="mt-2 text-xs opacity-70 italic font-normal">Dica: Lembre-se de adicionar a API_KEY nas configurações do projeto no Vercel.</p>
+            )}
           </div>
         )}
 
