@@ -2,9 +2,18 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { ActivityIdea } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+// Verificação segura para evitar que o app quebre se process não estiver definido
+const getApiKey = () => {
+  try {
+    return process.env.API_KEY || '';
+  } catch (e) {
+    return '';
+  }
+};
 
 export const generateLessonIdea = async (theme: string, ageGroup: string): Promise<ActivityIdea> => {
+  const ai = new GoogleGenAI({ apiKey: getApiKey() });
+  
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
     contents: `Crie uma atividade lúdica para Educação Infantil com o tema "${theme}" para a faixa etária "${ageGroup}".`,
