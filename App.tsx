@@ -1,0 +1,257 @@
+
+import React, { useState, useEffect } from 'react';
+import { ActivityIdea, AgeGroup } from './types';
+import { generateLessonIdea } from './services/geminiService';
+
+const Header: React.FC = () => (
+  <header className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md z-50 border-b border-amber-100">
+    <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <div className="w-8 h-8 bg-amber-400 rounded-lg flex items-center justify-center text-white font-bold">E</div>
+        <span className="font-bold text-xl tracking-tight text-amber-600">EducaLúdica</span>
+      </div>
+      <nav className="hidden md:flex gap-6 text-sm font-medium text-slate-600">
+        <a href="#beneficios" className="hover:text-amber-500 transition-colors">Benefícios</a>
+        <a href="#para-quem" className="hover:text-amber-500 transition-colors">Para Quem</a>
+        <a href="#demo" className="hover:text-amber-500 transition-colors">Testar IA</a>
+      </nav>
+      <button className="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2 rounded-full text-sm font-semibold transition-all shadow-md shadow-amber-200">
+        Quero o Kit
+      </button>
+    </div>
+  </header>
+);
+
+const Hero: React.FC = () => (
+  <section className="pt-32 pb-20 px-4">
+    <div className="max-w-4xl mx-auto text-center">
+      <span className="inline-block px-4 py-1.5 mb-6 text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-100 rounded-full">
+        Sem Experiência? Sem Problemas!
+      </span>
+      <h1 className="text-4xl md:text-6xl font-bold text-slate-900 leading-tight mb-6">
+        Crie aulas encantadoras na Educação Infantil — <span className="text-amber-500">mesmo começando do zero</span>
+      </h1>
+      <p className="text-lg md:text-xl text-slate-600 mb-10 leading-relaxed max-w-2xl mx-auto">
+        Um kit de atividades lúdicas prontas para transformar suas aulas sem estresse, improviso ou horas de planejamento.
+      </p>
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <button className="bg-amber-500 hover:bg-amber-600 text-white px-8 py-4 rounded-2xl text-lg font-bold transition-all shadow-lg shadow-amber-200 flex items-center justify-center gap-2">
+          Quero Garantir Meu Kit Agora
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+);
+
+const PainPoints: React.FC = () => (
+  <section id="beneficios" className="py-20 bg-white">
+    <div className="max-w-7xl mx-auto px-4">
+      <div className="grid md:grid-cols-2 gap-12 items-center">
+        <div>
+          <h2 className="text-3xl font-bold text-slate-900 mb-6">Você ama o que faz, mas o planejamento te assombra?</h2>
+          <div className="space-y-6">
+            {[
+              { q: "“Será que isso vai funcionar?”", icon: "🤔" },
+              { q: "“E se as crianças não se interessarem?”", icon: "👧" },
+              { q: "“Eu não sou criativa o suficiente…”", icon: "🎨" },
+            ].map((item, idx) => (
+              <div key={idx} className="flex gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                <span className="text-2xl">{item.icon}</span>
+                <p className="italic text-slate-700 font-medium">{item.q}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-8 text-slate-600">
+            O problema não é você. É a falta de apoio certo. Planejar do zero consome tempo e energia que você poderia estar usando com as crianças.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          {[
+            { title: "Atividades Testadas", text: "Tudo validado em sala.", icon: "✅", color: "bg-green-100" },
+            { title: "Zero Improviso", text: "Passo a passo detalhado.", icon: "⏱️", color: "bg-blue-100" },
+            { title: "Estimule o Brincar", text: "Foco no desenvolvimento.", icon: "🧠", color: "bg-purple-100" },
+            { title: "Felicidade Geral", icon: "👧🧒", text: "Crianças engajadas.", color: "bg-pink-100" }
+          ].map((feature, idx) => (
+            <div key={idx} className={`${feature.color} p-6 rounded-3xl`}>
+              <div className="text-3xl mb-3">{feature.icon}</div>
+              <h3 className="font-bold text-slate-900">{feature.title}</h3>
+              <p className="text-sm text-slate-700">{feature.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
+const AIDemo: React.FC = () => {
+  const [theme, setTheme] = useState('');
+  const [age, setAge] = useState(AgeGroup.MATERNAL);
+  const [idea, setIdea] = useState<ActivityIdea | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleGenerate = async () => {
+    if (!theme) return;
+    setLoading(true);
+    try {
+      const result = await generateLessonIdea(theme, age);
+      setIdea(result);
+    } catch (error) {
+      console.error(error);
+      alert("Houve um erro ao gerar a ideia. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <section id="demo" className="py-20 px-4">
+      <div className="max-w-4xl mx-auto bg-amber-50 rounded-[2.5rem] p-8 md:p-12 border border-amber-200 shadow-xl">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-slate-900 mb-4">Experimente uma prévia da criatividade!</h2>
+          <p className="text-slate-600">Veja como nossa metodologia (e um pouco de IA) pode gerar uma ideia incrível em segundos.</p>
+        </div>
+        
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Tema da aula</label>
+            <input 
+              type="text" 
+              placeholder="Ex: Animais, Cores, Outono..."
+              className="w-full px-5 py-3 rounded-xl border border-amber-200 focus:ring-2 focus:ring-amber-400 outline-none transition-all"
+              value={theme}
+              onChange={(e) => setTheme(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Faixa Etária</label>
+            <select 
+              className="w-full px-5 py-3 rounded-xl border border-amber-200 focus:ring-2 focus:ring-amber-400 outline-none bg-white transition-all"
+              value={age}
+              onChange={(e) => setAge(e.target.value as AgeGroup)}
+            >
+              {Object.values(AgeGroup).map((v) => (
+                <option key={v} value={v}>{v}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <button 
+          onClick={handleGenerate}
+          disabled={loading || !theme}
+          className="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-amber-300 text-white font-bold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
+        >
+          {loading ? (
+            <>
+              <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              Preparando Magia...
+            </>
+          ) : "Gerar Ideia de Aula"}
+        </button>
+
+        {idea && (
+          <div className="mt-12 bg-white rounded-3xl p-8 border border-amber-100 shadow-inner animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <h3 className="text-2xl font-bold text-amber-600 mb-4">✨ {idea.title}</h3>
+            <div className="space-y-6">
+              <div>
+                <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider mb-2">Objetivo</h4>
+                <p className="text-slate-600">{idea.objective}</p>
+              </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider mb-2">Materiais</h4>
+                  <ul className="list-disc list-inside text-slate-600 space-y-1">
+                    {idea.materials.map((m, i) => <li key={i}>{m}</li>)}
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider mb-2">Passo a Passo</h4>
+                  <ol className="list-decimal list-inside text-slate-600 space-y-1">
+                    {idea.steps.map((s, i) => <li key={i}>{s}</li>)}
+                  </ol>
+                </div>
+              </div>
+              <div className="bg-amber-50 p-4 rounded-xl border border-amber-100">
+                <h4 className="font-bold text-amber-700 text-sm uppercase tracking-wider mb-1">Dica de Ouro</h4>
+                <p className="text-amber-800 italic">{idea.tips}</p>
+              </div>
+            </div>
+            <div className="mt-8 text-center border-t border-slate-100 pt-6">
+              <p className="text-sm text-slate-400 mb-4">Gostou? Isso é só 1% do que tem no nosso kit completo!</p>
+              <button className="text-amber-600 font-bold hover:underline">Quero o material em PDF agora →</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+};
+
+const ForWhom: React.FC = () => (
+  <section id="para-quem" className="py-20 bg-slate-900 text-white overflow-hidden">
+    <div className="max-w-7xl mx-auto px-4 relative">
+      <div className="text-center mb-16">
+        <h2 className="text-3xl font-bold mb-4">Este Kit foi feito pensando em você!</h2>
+        <div className="w-20 h-1.5 bg-amber-400 mx-auto rounded-full"></div>
+      </div>
+      <div className="grid md:grid-cols-4 gap-6">
+        {[
+          "Professoras da Educação Infantil",
+          "Auxiliares e Estagiárias",
+          "Quem está começando e quer segurança",
+          "Quem quer aulas criativas sem complicação"
+        ].map((item, idx) => (
+          <div key={idx} className="bg-white/10 backdrop-blur-sm p-8 rounded-3xl border border-white/10 hover:border-amber-400/50 transition-all text-center">
+            <div className="w-12 h-12 bg-amber-400 rounded-full flex items-center justify-center text-slate-900 font-bold mx-auto mb-4">
+              {idx + 1}
+            </div>
+            <p className="font-semibold text-lg">{item}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+const Footer: React.FC = () => (
+  <footer className="bg-white py-12 border-t border-slate-100">
+    <div className="max-w-7xl mx-auto px-4 text-center">
+      <div className="flex items-center justify-center gap-2 mb-6">
+        <div className="w-8 h-8 bg-amber-400 rounded-lg flex items-center justify-center text-white font-bold">E</div>
+        <span className="font-bold text-xl tracking-tight text-amber-600">EducaLúdica</span>
+      </div>
+      <p className="text-slate-400 text-sm">
+        © 2024 EducaLúdica - Transformando a educação através do brincar.<br/>
+        Feito com ❤️ para educadores extraordinários.
+      </p>
+    </div>
+  </footer>
+);
+
+export default function App() {
+  return (
+    <div className="min-h-screen">
+      <Header />
+      <Hero />
+      <PainPoints />
+      <ForWhom />
+      <AIDemo />
+      
+      <section className="py-20 px-4 bg-amber-400">
+        <div className="max-w-3xl mx-auto text-center text-slate-900">
+          <h2 className="text-3xl md:text-5xl font-bold mb-8">Pronta para transformar suas aulas?</h2>
+          <p className="text-xl mb-10 opacity-90">
+            Chega de passar horas planejando ou se sentindo insegura. O kit EducaLúdica é o atalho que você merece.
+          </p>
+          <button className="bg-white hover:bg-slate-50 text-amber-600 px-10 py-5 rounded-2xl text-xl font-black transition-all shadow-2xl scale-110 hover:scale-115 active:scale-95">
+            SIM! QUERO MEU KIT AGORA!
+          </button>
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  );
+}
